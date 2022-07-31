@@ -6,6 +6,3 @@ export interface TokenData {
 export type AuthRequest = {
   user: TokenData;
 };
-// export type AuthRequest = {
-//   user: TokenData;
-// } & Request;

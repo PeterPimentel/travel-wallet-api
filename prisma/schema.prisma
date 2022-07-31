@@ -25,6 +25,7 @@ model Travel {
   cover     String
   owner     User      @relation(fields: [ownerId], references: [id])
   ownerId   Int
+  budget    Float?
   expenses  Expense[]
 }
 
@@ -42,4 +43,11 @@ model Expense {
   travelId    Int
   User        User     @relation(fields: [userId], references: [id])
   userId      Int
+}
+
+model Cover {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String
+  removed     Boolean @default(false)
 }

@@ -17,6 +17,7 @@ export const create = async (ownerId: number, travel: Omit<Travel, 'id'>) => {
       name: travel.name,
       cover: travel.cover,
       ownerId,
+      budget: travel.budget ? travel.budget : null,
     },
   });
 
@@ -34,6 +35,9 @@ export const find = async (ownerId: number) => {
           date: 'desc',
         },
       },
+    },
+    orderBy: {
+      createdAt: 'desc',
     },
   });
 

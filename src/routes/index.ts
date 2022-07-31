@@ -3,6 +3,7 @@ import { Router } from 'express';
 import * as authController from '../controllers/authController';
 import * as travelController from '../controllers/travelController';
 import * as expenseController from '../controllers/expenseController';
+import * as coverController from '../controllers/coverController';
 
 import * as guardMiddleware from '../middlewares/guardMiddleware';
 
@@ -23,5 +24,11 @@ router.delete('/api/travel/:id', guardMiddleware.authGuard('USER'), travelContro
 router.post('/api/expense', guardMiddleware.authGuard('USER'), expenseController.create);
 router.put('/api/expense/:id', guardMiddleware.authGuard('USER'), expenseController.update);
 router.delete('/api/expense/:id', guardMiddleware.authGuard('USER'), expenseController.remove);
+
+// COVER PATH
+router.post('/api/cover', guardMiddleware.authGuard('ADMIN'), coverController.create);
+router.put('/api/cover/:id', guardMiddleware.authGuard('ADMIN'), coverController.update);
+router.delete('/api/cover/:id', guardMiddleware.authGuard('ADMIN'), coverController.remove);
+router.get('/api/cover', guardMiddleware.authGuard('ALL'), coverController.findAll);
 
 export default router;

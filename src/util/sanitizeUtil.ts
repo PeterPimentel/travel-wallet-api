@@ -7,6 +7,7 @@ export const sanitizeTravel = (operation: 'CREATE' | 'UPDATE', data: Travel): Pa
     return {
       name: data.name,
       cover: data.cover,
+      budget: data.budget ? data.budget : null,
     };
   }
 };
