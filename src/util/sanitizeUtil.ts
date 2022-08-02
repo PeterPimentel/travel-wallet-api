@@ -1,4 +1,5 @@
 import { Travel, Expense } from '@prisma/client';
+import { parseDate } from './dateUtil';
 
 export const sanitizeTravel = (operation: 'CREATE' | 'UPDATE', data: Travel): Partial<Travel> => {
   if (operation === 'CREATE') {
@@ -13,8 +14,10 @@ export const sanitizeTravel = (operation: 'CREATE' | 'UPDATE', data: Travel): Pa
 };
 
 export const sanitizeUpdateExpense = (data: Expense): Partial<Expense> => {
+  const expenseDate = parseDate(data.date as unknown as string);
+
   return {
-    date: data.date,
+    date: expenseDate,
     description: data.description,
     payment: data.payment,
     title: data.title,

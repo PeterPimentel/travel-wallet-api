@@ -13,9 +13,7 @@ export const create = async (userId: number, expense: Omit<Expense, 'id'>) => {
     throw new ApiError(ERROR_MESSAGES.MISSING_FIELDS, 400);
   }
 
-  console.log('Received date', expense.date);
   const expenseDate = parseDate(expense.date as unknown as string);
-  console.log('Parsed date', expenseDate);
 
   const newExpense = await prisma.expense.create({
     data: {
