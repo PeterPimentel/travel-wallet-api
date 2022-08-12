@@ -21,7 +21,7 @@ export const sanitizeUpdateExpense = (data: Expense): Partial<Expense> => {
     description: data.description,
     payment: data.payment,
     title: data.title,
-    type: data.title,
+    type: data.type,
     value: data.value,
   };
 };

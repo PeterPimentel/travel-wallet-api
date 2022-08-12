@@ -82,14 +82,14 @@ export const update = async (ownerId: number, travelId: number, data: Travel) =>
     throw new AuthError(ERROR_MESSAGES.MISSING_FIELDS, 400);
   }
 
-  const travels = await prisma.travel.update({
+  const travel = await prisma.travel.update({
     where: {
       id: travelId,
     },
     data: sanitizeTravel('UPDATE', data),
   });
 
-  return travels;
+  return travel;
 };
 
 export const remove = async (ownerId: number, travelId: number) => {
@@ -107,7 +107,7 @@ export const remove = async (ownerId: number, travelId: number) => {
     throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403);
   }
 
-  const updatedTravel = await prisma.travel.update({
+  await prisma.travel.update({
     where: {
       id: travelId,
     },
@@ -118,11 +118,11 @@ export const remove = async (ownerId: number, travelId: number) => {
     },
   });
 
-  await prisma.travel.delete({
+  const removedItem = await prisma.travel.delete({
     where: {
       id: travelId,
     },
   });
 
-  return updatedTravel;
+  return removedItem;
 };

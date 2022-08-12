@@ -11,8 +11,7 @@ const app = express();
 // Express config
 app.use(
   cors({
-    origin: '*',
-    // origin: process.env.WEB_HOST,
+    origin: process.env.WEB_HOST,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   }),
 );
@@ -21,7 +20,7 @@ app.use(handleJSONParse); // handle json error
 app.use('/', router);
 app.use(errorResponder);
 
-const PORT = 3777;
+const PORT = process.env.PORT || 3777;
 app.listen(PORT, () => {
   console.log(`🚀 Server ready at: http://localhost:3777`);
 });
