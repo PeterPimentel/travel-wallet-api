@@ -4,12 +4,15 @@ import * as authController from '../controllers/authController';
 import * as travelController from '../controllers/travelController';
 import * as expenseController from '../controllers/expenseController';
 import * as coverController from '../controllers/coverController';
+import * as monitoringController from '../controllers/monitoringController';
 
 import * as guardMiddleware from '../middlewares/guardMiddleware';
 
 const router = Router();
+// API PATH
+router.get('/status', monitoringController.status);
+
 // AUTH PATH
-router.post('/api/auth/signup', authController.signup);
 router.post('/api/auth/signin', authController.signin);
 router.get('/api/auth/session', guardMiddleware.authGuard('USER'), authController.session);
 

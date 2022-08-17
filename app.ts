@@ -22,5 +22,5 @@ app.use(errorResponder);
 
 const PORT = process.env.PORT || 3777;
 app.listen(PORT, () => {
-  console.log(`🚀 Server ready at: http://localhost:3777`);
+  console.log(`🚀 Server ready at: http://localhost:${PORT}`);
 });
