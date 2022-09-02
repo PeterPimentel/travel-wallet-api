@@ -1,14 +1,15 @@
 export const ERROR_MESSAGES = {
-  INVALID_PWD: 'Email or Password invalid.',
-  UNEXPECTED_ERROR: 'Unexpected Error.',
+  EMAIL_IN_USE: 'This email is already being used.',
   EXPIRED_TOKEN: 'This token has already expired. Please login again.',
-  TOKEN_ERROR: 'Invalid Token.',
-  NO_TOKEN: 'Invalid session, please be sure that you are logged in.',
   FORBIDDEN: 'The user does not have access rights to the content.',
+  INVALID_DATE: 'Invalid date format',
+  INVALID_PWD: 'Email or Password invalid.',
   JSON_ERROR: 'Invalid request format',
   MISSING_FIELDS: 'Some required fields are missing',
-  INVALID_DATE: 'Invalid date format',
+  NO_TOKEN: 'Invalid session, please be sure that you are logged in.',
   NOT_FOUND: (entity: string) => `Unable to find the ${entity} with the provided Id`,
+  TOKEN_ERROR: 'Invalid Token.',
+  UNEXPECTED_ERROR: 'Unexpected Error.',
 };
 
 export const getPrismaErrorMessage = (code: string) => {

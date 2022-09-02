@@ -10,8 +10,15 @@ import * as userService from './userService';
 const NAME_SPACE = "auth-service";
 
 export const signup = async (newUser: Omit<User, 'id'>) => {
-  const encryptedPass = await cryptService.hash(newUser.password);
+  logger.info(NAME_SPACE, "signup step")
+  
+  const existentUser = await userService.findOne({ email:newUser.email }, false);
+  if(existentUser){
+    throw new ApiError(ERROR_MESSAGES.EMAIL_IN_USE, 400);
+  }
 
+  const encryptedPass = await cryptService.hash(newUser.password);
+  
   const user = await userService.create({
     username: newUser.username,
     email: newUser.email,

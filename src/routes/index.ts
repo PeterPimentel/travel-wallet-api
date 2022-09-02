@@ -14,6 +14,7 @@ router.get('/status', monitoringController.status);
 
 // AUTH PATH
 router.post('/api/auth/signin', authController.signin);
+router.post('/api/auth/signup', authController.signup);
 router.get('/api/auth/session', guardMiddleware.authGuard('USER'), authController.session);
 
 // TRAVEL PATH

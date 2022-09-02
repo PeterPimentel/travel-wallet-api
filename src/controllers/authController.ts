@@ -11,6 +11,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     const response = await authService.signup(req.body);
     res.json(response);
   } catch (error: any) {
+     logger.error(NAME_SPACE, error)
     next(error);
   }
 };
