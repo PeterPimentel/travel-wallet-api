@@ -5,6 +5,7 @@ import * as travelController from '../controllers/travelController';
 import * as expenseController from '../controllers/expenseController';
 import * as coverController from '../controllers/coverController';
 import * as monitoringController from '../controllers/monitoringController';
+import * as cmsController from '../controllers/cmsController';
 
 import * as guardMiddleware from '../middlewares/guardMiddleware';
 
@@ -34,5 +35,8 @@ router.post('/api/cover', guardMiddleware.authGuard('ADMIN'), coverController.cr
 router.put('/api/cover/:id', guardMiddleware.authGuard('ADMIN'), coverController.update);
 router.delete('/api/cover/:id', guardMiddleware.authGuard('ADMIN'), coverController.remove);
 router.get('/api/cover', guardMiddleware.authGuard('ALL'), coverController.findAll);
+
+// CMS PATH
+router.get('/api/cms/landing_page', cmsController.landingPage);
 
 export default router;
