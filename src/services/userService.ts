@@ -51,12 +51,48 @@ export const create = async (user: Omit<User, 'id'>) => {
   return newUser;
 };
 
-export const remove = async (id: number) => {
-  const data = await prisma.user.delete({
+export const remove = async (userId: number) => {
+  const createdTravels = await prisma.travel.findMany({
     where: {
-      id,
+      ownerId: userId,
+    },
+    include: {
+      expenses: true,
     },
   });
 
-  return data;
+  const travelIds = createdTravels.map((travel) => travel.id);
+
+  const expenseIds = createdTravels.reduce((acc: number[], curr) => {
+    const expenses: number[] = curr.expenses.map((exp) => exp.id);
+    return acc.concat(...expenses);
+  }, []);
+
+  if (expenseIds.length) {
+    await prisma.expense.deleteMany({
+      where: {
+        id: {
+          in: expenseIds,
+        },
+      },
+    });
+  }
+
+  if (travelIds.length) {
+    await prisma.travel.deleteMany({
+      where: {
+        id: {
+          in: travelIds,
+        },
+      },
+    });
+  }
+
+  await prisma.user.delete({
+    where: {
+      id: userId,
+    },
+  });
+
+  return '';
 };

@@ -6,6 +6,7 @@ import * as expenseController from '../controllers/expenseController';
 import * as coverController from '../controllers/coverController';
 import * as monitoringController from '../controllers/monitoringController';
 import * as cmsController from '../controllers/cmsController';
+import * as userController from '../controllers/userController';
 
 import * as guardMiddleware from '../middlewares/guardMiddleware';
 
@@ -17,6 +18,9 @@ router.get('/status', monitoringController.status);
 router.post('/api/auth/signin', authController.signin);
 router.post('/api/auth/signup', authController.signup);
 router.get('/api/auth/session', guardMiddleware.authGuard('USER'), authController.session);
+
+// USER PATH
+router.delete('/api/user', guardMiddleware.authGuard('USER'), userController.remove);
 
 // TRAVEL PATH
 router.post('/api/travel', guardMiddleware.authGuard('USER'), travelController.create);
