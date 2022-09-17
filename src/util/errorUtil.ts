@@ -1,5 +1,6 @@
 export const ERROR_MESSAGES = {
   EMAIL_IN_USE: 'This email is already being used.',
+  USERNAME_IN_USE: 'This username is already being used.',
   EXPIRED_TOKEN: 'This token has already expired. Please login again.',
   FORBIDDEN: 'The user does not have access rights to the content.',
   INVALID_DATE: 'Invalid date format',

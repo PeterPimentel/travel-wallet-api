@@ -107,14 +107,9 @@ export const remove = async (ownerId: number, travelId: number) => {
     throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403);
   }
 
-  await prisma.travel.update({
+  await prisma.expense.deleteMany({
     where: {
-      id: travelId,
-    },
-    data: {
-      expenses: {
-        deleteMany: {},
-      },
+      travelId,
     },
   });
 
