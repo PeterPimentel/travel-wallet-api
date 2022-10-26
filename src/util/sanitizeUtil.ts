@@ -1,4 +1,4 @@
-import { Travel, Expense } from '@prisma/client';
+import { Travel, Expense, Location } from '@prisma/client';
 import { parseDate } from './dateUtil';
 
 export const sanitizeTravel = (operation: 'CREATE' | 'UPDATE', data: Travel): Partial<Travel> => {
@@ -13,7 +13,7 @@ export const sanitizeTravel = (operation: 'CREATE' | 'UPDATE', data: Travel): Pa
   }
 };
 
-export const sanitizeUpdateExpense = (data: Expense): Partial<Expense> => {
+export const sanitizeUpdateExpense = (data: Expense, locationId: number | null): Partial<Expense> => {
   const expenseDate = parseDate(data.date as unknown as string);
 
   return {
@@ -23,5 +23,18 @@ export const sanitizeUpdateExpense = (data: Expense): Partial<Expense> => {
     title: data.title,
     type: data.type,
     value: data.value,
+    locationId,
+  };
+};
+
+export const sanitizeLocation = (data: Location): Partial<Location> => {
+  return {
+    cityLat: data.cityLat,
+    cityLong: data.cityLong,
+    cityName: data.cityName,
+    countryCode: data.countryCode,
+    countryName: data.countryName,
+    label: data.label,
+    region: data.region,
   };
 };

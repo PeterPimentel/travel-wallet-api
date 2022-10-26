@@ -9,40 +9,61 @@ datasource db {
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
-  email    String    @unique
-  username String    @unique
+  id       Int        @id @default(autoincrement())
+  email    String     @unique
+  username String     @unique
   password String
   travels  Travel[]
   expenses Expense[]
+  Location Location[]
+}
+
+model Location {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  countryCode String
+  countryName String
+  cityName    String
+  label       String
+  cityLat     Float
+  cityLong    Float
+  region      String
+  Expense     Expense[]
+  owner       User      @relation(fields: [ownerId], references: [id])
+  ownerId     Int
+  travel      Travel    @relation(fields: [travelId], references: [id])
+  travelId    Int
 }
 
 model Travel {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   name      String
   cover     String
-  owner     User      @relation(fields: [ownerId], references: [id])
+  owner     User       @relation(fields: [ownerId], references: [id])
   ownerId   Int
   budget    Float?
   expenses  Expense[]
+  Location  Location[]
 }
 
 model Expense {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   date        DateTime
   description String?
   title       String
   type        String
   value       Float
   payment     String
-  travel      Travel   @relation(fields: [travelId], references: [id])
+  travel      Travel    @relation(fields: [travelId], references: [id])
   travelId    Int
-  User        User     @relation(fields: [userId], references: [id])
+  User        User      @relation(fields: [userId], references: [id])
   userId      Int
+  location    Location? @relation(fields: [locationId], references: [id])
+  locationId  Int?
 }
 
 model Cover {

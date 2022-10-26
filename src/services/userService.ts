@@ -78,6 +78,12 @@ export const remove = async (userId: number) => {
     });
   }
 
+  await prisma.location.deleteMany({
+    where: {
+      ownerId: userId
+    },
+  });
+
   if (travelIds.length) {
     await prisma.travel.deleteMany({
       where: {

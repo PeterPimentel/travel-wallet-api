@@ -1,13 +1,25 @@
 const axios = require('axios').default;
 
-const CMS_API_URL = process.env.CMS_API_URL;
+type Method = 'post' | 'get' | 'delete' | 'put';
 
-export async function cmsfetcher<T>(resource: string): Promise<T> {
-  const response = await axios.get(`${CMS_API_URL}/items/${resource}`);
+type Config = {
+  method: Method;
+  headers?: any;
+  params?: any;
+};
+
+export async function fetcher<T>(config: Config, url: string, data?: any): Promise<T> {
+  const response = await axios({
+    method: config.method,
+    headers: config.headers,
+    params: config.params,
+    url: url,
+    data,
+  });
 
   if (response.status === 200) {
     return response.data as unknown as T;
   } else {
-    throw new Error("Service Unavailable");
+    throw new Error('Service Unavailable');
   }
 }
