@@ -7,6 +7,7 @@ import * as coverController from '../controllers/coverController';
 import * as monitoringController from '../controllers/monitoringController';
 import * as cmsController from '../controllers/cmsController';
 import * as userController from '../controllers/userController';
+import * as locationController from '../controllers/locationController';
 
 import * as guardMiddleware from '../middlewares/guardMiddleware';
 
@@ -42,5 +43,8 @@ router.get('/api/cover', guardMiddleware.authGuard('ALL'), coverController.findA
 
 // CMS PATH
 router.get('/api/cms/landing_page', cmsController.landingPage);
+
+// LOCATION PATH
+router.post('/api/location/place', guardMiddleware.authGuard('USER'), locationController.findPlace);
 
 export default router;
