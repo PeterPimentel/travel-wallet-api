@@ -16,7 +16,7 @@ export const getPlaces = async (body: PlaceApiRequest) => {
   const response = await placeFetcher<PlaceApiResponse>(body.query);
 
   if (!isValidPlaceResponse(response)) {
-    throw new ApiError(ERROR_MESSAGES.ENTITY_NOT_FOUND('City'), 400);
+    throw new ApiError(ERROR_MESSAGES.ENTITY_NOT_FOUND('City'), 404);
   }
 
   const places = response.data.filter((city) => city.type === 'locality');
@@ -88,7 +88,7 @@ export const update = async (userId: number, locationId: number, data: Location)
   })
 
   if (!storedLocation) {
-    throw new ApiError(ERROR_MESSAGES.ENTITY_NOT_FOUND('expense'), 400);
+    throw new ApiError(ERROR_MESSAGES.ENTITY_NOT_FOUND('expense'), 407);
   }
   if (storedLocation?.ownerId !== userId) {
     throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403);

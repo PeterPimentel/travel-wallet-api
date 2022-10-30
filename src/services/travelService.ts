@@ -78,7 +78,7 @@ export const update = async (ownerId: number, travelId: number, data: Travel) =>
   });
 
   if (!storedTravel) {
-    throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND('travel'), 400);
+    throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND('travel'), 404);
   }
 
   if (storedTravel?.ownerId !== ownerId) {
@@ -108,7 +108,7 @@ export const remove = async (ownerId: number, travelId: number) => {
   });
 
   if (!storedTravel) {
-    throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND('travel'), 400);
+    throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND('travel'), 404);
   }
 
   if (storedTravel?.ownerId !== ownerId) {

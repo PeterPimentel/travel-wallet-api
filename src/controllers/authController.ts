@@ -11,7 +11,19 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     const response = await authService.signup(req.body);
     res.json(response);
   } catch (error: any) {
-     logger.error(NAME_SPACE, error)
+    logger.error(NAME_SPACE, error)
+    next(error);
+  }
+};
+
+export const signupConfirm = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const callbackURL = req.query.callbackURL;
+    const result = await authService.signupConfirm(req.params.token);
+
+    res.status(301).redirect(`${callbackURL}?status=${result.status}&code=${result.code}`)
+  } catch (error: any) {
+    logger.error(NAME_SPACE, error)
     next(error);
   }
 };

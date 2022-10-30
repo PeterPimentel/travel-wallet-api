@@ -2,24 +2,8 @@ import { User } from '@prisma/client';
 import prisma from '../config/db';
 import { UserFindQuery } from '../types/QueryType';
 
-export const findById = async (id: number) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: id,
-    },
-    select: {
-      email: true,
-      username: true,
-      id: true,
-      password: false,
-    },
-  });
-
-  return user;
-};
-
 export const findOne = async (userQuery: Partial<UserFindQuery>, withCredential: boolean = false) => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({
     where: {
       ...userQuery,
     },
@@ -28,23 +12,28 @@ export const findOne = async (userQuery: Partial<UserFindQuery>, withCredential:
       username: true,
       id: true,
       password: withCredential,
+      activationToken: true,
+      active: true,
     },
   });
 
   return user;
 };
 
-export const create = async (user: Omit<User, 'id'>) => {
+export const create = async (user: Omit<User, 'id' | 'createdAt' | 'active'>) => {
   const newUser = await prisma.user.create({
     data: {
       username: user.username,
       email: user.email,
       password: user.password,
+      activationToken: user.activationToken,
     },
     select: {
       email: true,
       username: true,
       id: true,
+      activationToken: true,
+      active: true,
     },
   });
 
@@ -101,4 +90,21 @@ export const remove = async (userId: number) => {
   });
 
   return '';
+};
+
+
+export const update = async (userId: number, user: Omit<User, 'id' | 'createdAt' | 'password'>) => {
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId
+    },
+    data: {
+      username: user.username,
+      email: user.email,
+      activationToken: user.activationToken,
+      active: user.active
+    },
+  });
+
+  return updatedUser;
 };

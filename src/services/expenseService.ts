@@ -105,7 +105,7 @@ export const update = async (userId: number, expenseId: number, data: ExpenseReq
   const storedExpense = await findOne(expenseId);
 
   if (!storedExpense) {
-    throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND('expense'), 400);
+    throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND('expense'), 404);
   }
   if (storedExpense?.userId !== userId) {
     throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403);
@@ -134,7 +134,7 @@ export const remove = async (userId: number, expenseId: number) => {
   const storedExpense = await findOne(expenseId);
 
   if (!storedExpense) {
-    throw new ApiError(ERROR_MESSAGES.ENTITY_NOT_FOUND('expense'), 400);
+    throw new ApiError(ERROR_MESSAGES.ENTITY_NOT_FOUND('expense'), 404);
   }
   if (storedExpense.userId !== userId) {
     throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403);
