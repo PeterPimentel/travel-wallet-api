@@ -18,28 +18,29 @@ router.get('/status', monitoringController.status);
 // AUTH PATH
 router.post('/api/auth/signin', authController.signin);
 router.post('/api/auth/signup', authController.signup);
+router.get('/api/auth/signup/confirm/:token', authController.signupConfirm);
 router.get('/api/auth/session', guardMiddleware.authGuard('USER'), authController.session);
 
 // USER PATH
 router.delete('/api/user', guardMiddleware.authGuard('USER'), userController.remove);
 
 // TRAVEL PATH
-router.post('/api/travel', guardMiddleware.authGuard('USER'), travelController.create);
+router.post('/api/travel', guardMiddleware.authGuard('USER'), guardMiddleware.activationGuard, travelController.create);
 router.get('/api/travel', guardMiddleware.authGuard('USER'), travelController.find);
 router.get('/api/travel/:id', guardMiddleware.authGuard('USER'), travelController.findOne);
-router.put('/api/travel/:id', guardMiddleware.authGuard('USER'), travelController.update);
+router.put('/api/travel/:id', guardMiddleware.authGuard('USER'), guardMiddleware.activationGuard, travelController.update);
 router.delete('/api/travel/:id', guardMiddleware.authGuard('USER'), travelController.remove);
 
 // EXPENSE PATH
-router.post('/api/expense', guardMiddleware.authGuard('USER'), expenseController.create);
-router.put('/api/expense/:id', guardMiddleware.authGuard('USER'), expenseController.update);
+router.post('/api/expense', guardMiddleware.authGuard('USER'), guardMiddleware.activationGuard, expenseController.create);
+router.put('/api/expense/:id', guardMiddleware.authGuard('USER'), guardMiddleware.activationGuard, expenseController.update);
 router.delete('/api/expense/:id', guardMiddleware.authGuard('USER'), expenseController.remove);
 
 // COVER PATH
 router.post('/api/cover', guardMiddleware.authGuard('ADMIN'), coverController.create);
 router.put('/api/cover/:id', guardMiddleware.authGuard('ADMIN'), coverController.update);
 router.delete('/api/cover/:id', guardMiddleware.authGuard('ADMIN'), coverController.remove);
-router.get('/api/cover', guardMiddleware.authGuard('ALL'), coverController.findAll);
+router.get('/api/cover', guardMiddleware.authGuard('USER'), coverController.findAll);
 
 // CMS PATH
 router.get('/api/cms/landing_page', cmsController.landingPage);

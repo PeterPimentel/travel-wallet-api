@@ -6,7 +6,7 @@ export const ERROR_MESSAGES = {
   INVALID_PWD: 'Email or Password invalid.',
   JSON_ERROR: 'Invalid request format',
   ENTITY_NOT_FOUND: (entity: string) => `Unable to find the ${entity} with the provided data`,
-  MISSING_FIELDS:(fields : string[]) => `Those required fields are missing: ${fields.join()}`,
+  MISSING_FIELDS: (fields: string[]) => `Those required fields are missing: ${fields.join()}`,
   NO_TOKEN: 'Invalid session, please be sure that you are logged in.',
   PREFIX_REQUIRED: (entity: string, size: number = 3) => `The ${entity} name must contain ${size} or more letters`,
   TOKEN_ERROR: 'Invalid Token.',

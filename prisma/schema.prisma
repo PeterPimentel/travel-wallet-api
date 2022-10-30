@@ -9,13 +9,16 @@ datasource db {
 }
 
 model User {
-  id       Int        @id @default(autoincrement())
-  email    String     @unique
-  username String     @unique
-  password String
-  travels  Travel[]
-  expenses Expense[]
-  Location Location[]
+  id              Int        @id @default(autoincrement())
+  createdAt       DateTime   @default(now())
+  email           String     @unique
+  username        String     @unique
+  password        String
+  active          Boolean    @default(false)
+  activationToken String     @default("")
+  travels         Travel[]
+  expenses        Expense[]
+  Location        Location[]
 }
 
 model Location {
@@ -28,11 +31,11 @@ model Location {
   cityLat     Float
   cityLong    Float
   region      String
-  Expense     Expense[]
   owner       User      @relation(fields: [ownerId], references: [id])
   ownerId     Int
   travel      Travel    @relation(fields: [travelId], references: [id])
   travelId    Int
+  Expense     Expense[]
 }
 
 model Travel {
