@@ -12,6 +12,7 @@ export const ERROR_MESSAGES = {
   TOKEN_ERROR: 'Invalid Token.',
   UNEXPECTED_ERROR: 'Unexpected Error.',
   USERNAME_IN_USE: 'This username is already being used.',
+  ACTIVATED_ACCOUNT: 'This account is already activated',
 };
 
 export const getPrismaErrorMessage = (code: string) => {

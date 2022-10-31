@@ -16,6 +16,17 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
+export const activationRetry = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = (req as unknown as AuthRequest).user.id;
+    const response = await authService.activationRetry(id);
+    res.json(response);
+  } catch (error: any) {
+    logger.error(NAME_SPACE, error)
+    next(error);
+  }
+};
+
 export const signupConfirm = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const callbackURL = req.query.callbackURL;
