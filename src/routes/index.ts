@@ -18,8 +18,9 @@ router.get('/status', monitoringController.status);
 // AUTH PATH
 router.post('/api/auth/signin', authController.signin);
 router.post('/api/auth/signup', authController.signup);
-router.get('/api/auth/signup/confirm/:token', authController.signupConfirm);
 router.get('/api/auth/session', guardMiddleware.authGuard('USER'), authController.session);
+router.get('/api/auth/activation/retry', guardMiddleware.authGuard('USER'), authController.activationRetry);
+router.get('/api/auth/activation/confirm/:token', authController.signupConfirm);
 
 // USER PATH
 router.delete('/api/user', guardMiddleware.authGuard('USER'), userController.remove);

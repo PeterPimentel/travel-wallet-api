@@ -1,6 +1,6 @@
 import { User } from '@prisma/client';
 
-import ApiError from '../util/Error';
+import ApiError, { AuthError } from '../util/Error';
 import { ERROR_MESSAGES } from '../util/errorUtil';
 import logger from '../util/logUtil';
 import { Status } from '../types/CommonType';
@@ -100,4 +100,35 @@ export const signupConfirm = async (token: string): Promise<{ status: Status, co
     status: "success",
     code: TRANSLATION_CODES.activation_success
   }
+};
+
+export const activationRetry = async (userId: number) => {
+  logger.info(NAME_SPACE, 'activationRetry');
+
+  const storedUser = await userService.findOne({ id: userId }, false);
+
+  if (!storedUser) {
+    throw new ApiError(ERROR_MESSAGES.ENTITY_NOT_FOUND("User"), 400);
+  }
+
+  if (storedUser?.active) {
+    throw new AuthError(ERROR_MESSAGES.ACTIVATED_ACCOUNT, 400);
+  }
+
+  const randomId = cryptService.generateRandomId()
+
+  await userService.update(storedUser.id, {
+    username: storedUser.username,
+    email: storedUser.email,
+    activationToken: randomId,
+    active: false,
+  });
+
+  await mailService.sendActivationAccountEmail(storedUser.email, randomId)
+
+  return {
+    user: {
+      email: storedUser.email,
+    },
+  };
 };
