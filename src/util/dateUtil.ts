@@ -1,4 +1,4 @@
-import { format, isValid, parse } from 'date-fns';
+import { format, isValid, parse, add, isAfter } from 'date-fns';
 import ApiError from './Error';
 import { ERROR_MESSAGES } from './errorUtil';
 
@@ -19,3 +19,16 @@ export const parseDate = (value: string, pattern: string = DATE_FORMAT): Date =>
 export const isValidDate = (date: any): boolean => {
   return isValid(date);
 };
+
+type Duration = {
+  minutes?: number;
+  hours?: number;
+  days?: number;
+}
+
+export const addToDate = (date: Date, duration: Duration): Date => {
+  return add(date, duration)
+}
+export const isDateAfter = (date: Date, dateToCompare: Date): boolean => {
+  return isAfter(date, dateToCompare)
+}

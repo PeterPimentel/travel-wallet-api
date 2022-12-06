@@ -9,6 +9,15 @@ datasource db {
   referentialIntegrity = "prisma"
 }
 
+model ResetToken {
+  id        Int      @id @default(autoincrement())
+  expiresIn DateTime
+  email     String   @unique
+  token     String
+  updatedAt DateTime @updatedAt
+  retries   Int
+}
+
 model User {
   id              Int        @id @default(autoincrement())
   createdAt       DateTime   @default(now())
@@ -20,6 +29,7 @@ model User {
   travels         Travel[]
   expenses        Expense[]
   Location        Location[]
+  role            String     @default("USER")
 }
 
 model Location {

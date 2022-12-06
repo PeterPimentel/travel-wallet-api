@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { NextFunction, Request, Response } from 'express';
 import ApiError from '../util/Error';
-import { ERROR_MESSAGES, getPrismaErrorMessage } from '../util/errorUtil';
+import { ERROR_MESSAGES, getPrismaErrorMessage, ERROR_CODES } from '../util/errorUtil';
 import logger from '../util/logUtil';
 
 const NAME_SPACE = "error-middleware";
@@ -27,6 +27,6 @@ export const errorResponder = (err: any, _: Request, res: Response, __: NextFunc
     res.status(400).send(JSON.stringify(new ApiError(getPrismaErrorMessage(err.code), 500), null, 4));
   } else {
     logger.error(NAME_SPACE, err)
-    res.status(500).send(JSON.stringify(new ApiError(ERROR_MESSAGES.UNEXPECTED_ERROR, 500), null, 4));
+    res.status(500).send(JSON.stringify(new ApiError(ERROR_MESSAGES.UNEXPECTED_ERROR, 500, ERROR_CODES.unexpected_error), null, 4));
   }
 };
