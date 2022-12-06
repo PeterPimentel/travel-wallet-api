@@ -1,14 +1,15 @@
 import { User } from '@prisma/client';
 
 import ApiError, { AuthError } from '../util/Error';
-import { ERROR_MESSAGES } from '../util/errorUtil';
+import { ERROR_MESSAGES, ERROR_CODES } from '../util/errorUtil';
 import logger from '../util/logUtil';
-import { Status } from '../types/CommonType';
-import { TRANSLATION_CODES } from '../util/constants';
+import { ROLE } from '../util/constants';
+import { RoleAccessType, Status } from '../types/CommonType';
 
 import * as cryptService from './cryptService';
 import * as userService from './userService';
 import * as mailService from './mailService';
+import * as resetTokenService from './resetTokenService';
 
 const NAME_SPACE = 'auth-service';
 
@@ -19,10 +20,10 @@ export const signup = async (newUser: Omit<User, 'id'>) => {
   const existentUsername = await userService.findOne({ username: newUser.username }, false);
 
   if (existentEmail) {
-    throw new ApiError(ERROR_MESSAGES.EMAIL_IN_USE, 400);
+    throw new ApiError(ERROR_MESSAGES.EMAIL_IN_USE, 400, ERROR_CODES.email_in_use);
   }
   if (existentUsername) {
-    throw new ApiError(ERROR_MESSAGES.USERNAME_IN_USE, 400);
+    throw new ApiError(ERROR_MESSAGES.USERNAME_IN_USE, 400, ERROR_CODES.username_in_use);
   }
 
   const encryptedPass = await cryptService.hash(newUser.password);
@@ -37,7 +38,12 @@ export const signup = async (newUser: Omit<User, 'id'>) => {
 
   await mailService.sendActivationAccountEmail(newUser.email, randomId)
 
-  const token = await cryptService.generateToken({ id: user.id, username: user.username, active: false });
+  const token = await cryptService.generateToken({
+    id: user.id,
+    username: user.username,
+    active: false,
+    role: ROLE.user
+  });
 
   return {
     user: {
@@ -56,7 +62,12 @@ export const signin = async (email: string, password: string) => {
   if (user) {
     const pwdMatch = await cryptService.compare(password, user.password);
     if (pwdMatch) {
-      const token = await cryptService.generateToken({ id: user.id, username: user.username, active: user.active });
+      const token = await cryptService.generateToken({
+        id: user.id,
+        username: user.username,
+        active: user.active,
+        role: user.role as RoleAccessType
+      });
       if (token) {
         return {
           user: {
@@ -71,7 +82,7 @@ export const signin = async (email: string, password: string) => {
     }
   }
   logger.warning(NAME_SPACE, 'signin step - user not found');
-  throw new ApiError(ERROR_MESSAGES.INVALID_PWD, 400);
+  throw new ApiError(ERROR_MESSAGES.INVALID_PWD, 400, ERROR_CODES.invalid_pwd);
 };
 
 export const signupConfirm = async (token: string): Promise<{ status: Status, code: string }> => {
@@ -83,7 +94,7 @@ export const signupConfirm = async (token: string): Promise<{ status: Status, co
 
     return {
       status: "error",
-      code: TRANSLATION_CODES.token_not_found
+      code: ERROR_CODES.token_not_found
     }
   }
 
@@ -98,7 +109,7 @@ export const signupConfirm = async (token: string): Promise<{ status: Status, co
 
   return {
     status: "success",
-    code: TRANSLATION_CODES.activation_success
+    code: ERROR_CODES.activation_success
   }
 };
 
@@ -108,11 +119,11 @@ export const activationRetry = async (userId: number) => {
   const storedUser = await userService.findOne({ id: userId }, false);
 
   if (!storedUser) {
-    throw new ApiError(ERROR_MESSAGES.ENTITY_NOT_FOUND("User"), 400);
+    throw new ApiError(ERROR_MESSAGES.ENTITY_NOT_FOUND("User"), 400, ERROR_CODES.user_not_found);
   }
 
   if (storedUser?.active) {
-    throw new AuthError(ERROR_MESSAGES.ACTIVATED_ACCOUNT, 400);
+    throw new AuthError(ERROR_MESSAGES.ACTIVATED_ACCOUNT, 400, ERROR_CODES.account_activated);
   }
 
   const randomId = cryptService.generateRandomId()
@@ -132,3 +143,35 @@ export const activationRetry = async (userId: number) => {
     },
   };
 };
+
+export const passwordResetRequest = async (email: string) => {
+  const storedUser = await userService.findOne({ email: email });
+  if (!storedUser) {
+    throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND("User"), 400, ERROR_CODES.user_not_found);
+  }
+
+  const code = await resetTokenService.createToken(email)
+
+  await mailService.sendPasswordResetCodeEmail(storedUser.email, code)
+
+  return null
+}
+
+export const passwordUpdate = async (email: string, resetCode: string, password: string) => {
+  const storedUser = await userService.findOne({ email: email });
+  if (!storedUser) {
+    throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND("User"), 400, ERROR_CODES.user_not_found);
+  }
+
+  const isValid = await resetTokenService.validateToken(resetCode, email)
+  if (isValid) {
+    const newPassword = await cryptService.hash(password);
+
+    await resetTokenService.removeToken(email)
+
+    await userService.updatePassword(storedUser.id, newPassword);
+    return null
+  }
+
+  throw new AuthError(ERROR_MESSAGES.UNEXPECTED_ERROR, 400, ERROR_CODES.unexpected_error);
+}

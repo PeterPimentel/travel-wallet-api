@@ -11,6 +11,8 @@ import * as locationController from '../controllers/locationController';
 
 import * as guardMiddleware from '../middlewares/guardMiddleware';
 
+import { ROLE } from '../util/constants';
+
 const router = Router();
 // API PATH
 router.get('/status', monitoringController.status);
@@ -18,35 +20,37 @@ router.get('/status', monitoringController.status);
 // AUTH PATH
 router.post('/api/auth/signin', authController.signin);
 router.post('/api/auth/signup', authController.signup);
-router.get('/api/auth/session', guardMiddleware.authGuard('USER'), authController.session);
-router.get('/api/auth/activation/retry', guardMiddleware.authGuard('USER'), authController.activationRetry);
+router.get('/api/auth/session', guardMiddleware.authGuard(ROLE.user), authController.session);
+router.get('/api/auth/activation/retry', guardMiddleware.authGuard(ROLE.user), authController.activationRetry);
 router.get('/api/auth/activation/confirm/:token', authController.signupConfirm);
+router.post('/api/auth/password/reset', authController.passwordResetRequest);
+router.put('/api/auth/password/reset', authController.passwordUpdate);
 
 // USER PATH
-router.delete('/api/user', guardMiddleware.authGuard('USER'), userController.remove);
+router.delete('/api/user', guardMiddleware.authGuard(ROLE.user), userController.remove);
 
 // TRAVEL PATH
-router.post('/api/travel', guardMiddleware.authGuard('USER'), guardMiddleware.activationGuard, travelController.create);
-router.get('/api/travel', guardMiddleware.authGuard('USER'), travelController.find);
-router.get('/api/travel/:id', guardMiddleware.authGuard('USER'), travelController.findOne);
-router.put('/api/travel/:id', guardMiddleware.authGuard('USER'), guardMiddleware.activationGuard, travelController.update);
-router.delete('/api/travel/:id', guardMiddleware.authGuard('USER'), travelController.remove);
+router.post('/api/travel', guardMiddleware.authGuard(ROLE.user), guardMiddleware.activationGuard, travelController.create);
+router.get('/api/travel', guardMiddleware.authGuard(ROLE.user), travelController.find);
+router.get('/api/travel/:id', guardMiddleware.authGuard(ROLE.user), travelController.findOne);
+router.put('/api/travel/:id', guardMiddleware.authGuard(ROLE.user), guardMiddleware.activationGuard, travelController.update);
+router.delete('/api/travel/:id', guardMiddleware.authGuard(ROLE.user), travelController.remove);
 
 // EXPENSE PATH
-router.post('/api/expense', guardMiddleware.authGuard('USER'), guardMiddleware.activationGuard, expenseController.create);
-router.put('/api/expense/:id', guardMiddleware.authGuard('USER'), guardMiddleware.activationGuard, expenseController.update);
-router.delete('/api/expense/:id', guardMiddleware.authGuard('USER'), expenseController.remove);
+router.post('/api/expense', guardMiddleware.authGuard(ROLE.user), guardMiddleware.activationGuard, expenseController.create);
+router.put('/api/expense/:id', guardMiddleware.authGuard(ROLE.user), guardMiddleware.activationGuard, expenseController.update);
+router.delete('/api/expense/:id', guardMiddleware.authGuard(ROLE.user), expenseController.remove);
 
 // COVER PATH
-router.post('/api/cover', guardMiddleware.authGuard('ADMIN'), coverController.create);
-router.put('/api/cover/:id', guardMiddleware.authGuard('ADMIN'), coverController.update);
-router.delete('/api/cover/:id', guardMiddleware.authGuard('ADMIN'), coverController.remove);
-router.get('/api/cover', guardMiddleware.authGuard('USER'), coverController.findAll);
+router.post('/api/cover', guardMiddleware.authGuard(ROLE.admin), coverController.create);
+router.put('/api/cover/:id', guardMiddleware.authGuard(ROLE.admin), coverController.update);
+router.delete('/api/cover/:id', guardMiddleware.authGuard(ROLE.admin), coverController.remove);
+router.get('/api/cover', guardMiddleware.authGuard(ROLE.user), coverController.findAll);
 
 // CMS PATH
 router.get('/api/cms/landing_page', cmsController.landingPage);
 
 // LOCATION PATH
-router.post('/api/location/place', guardMiddleware.authGuard('USER'), locationController.findPlace);
+router.post('/api/location/place', guardMiddleware.authGuard(ROLE.user), locationController.findPlace);
 
 export default router;

@@ -57,3 +57,23 @@ export const session = async (req: Request, res: Response, next: NextFunction) =
     next(error);
   }
 };
+
+export const passwordResetRequest = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await authService.passwordResetRequest(req.body.email);
+    res.status(204).send();
+  } catch (error: any) {
+    logger.error(NAME_SPACE, error)
+    next(error);
+  }
+};
+
+export const passwordUpdate = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await authService.passwordUpdate(req.body.email, req.body.code, req.body.password);
+    res.status(204).send();
+  } catch (error: any) {
+    logger.error(NAME_SPACE, error)
+    next(error);
+  }
+};

@@ -26,3 +26,20 @@ export const sendActivationAccountEmail = async (userEmail: string, token: strin
 
     await sgMail.send(email)
 }
+
+
+export const sendPasswordResetCodeEmail = async (userEmail: string, code: string) => {
+    logger.info(NAME_SPACE, 'sendPasswordResetCodeEmail');
+
+    const email = {
+        to: userEmail,
+        from: VERIFIED_SENDER as string,
+        html: `<div>Password reset code, ${code}<div/>`,
+        dynamic_template_data: {
+            code: code,
+        },
+        template_id: EMAIL_TEMPLATE.password_reset
+    }
+
+    await sgMail.send(email)
+}

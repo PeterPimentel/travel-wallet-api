@@ -9,6 +9,14 @@ import { ERROR_MESSAGES } from '../util/errorUtil';
 const SALT_ROUNDS = 12;
 const PRIVATE_KEY = process.env.JWT_KEY as string;
 
+export const generateRandomCode = (size = 6): string => {
+  let code = '';
+  for (let i = 0; i < size; i++) {
+    code += Math.floor(Math.random() * 10);
+  }
+  return code;
+}
+
 export const generateRandomId = () => {
   return uuidv4()
 }
@@ -17,14 +25,14 @@ export const hash = async (password: string) => {
   return await bcrypt.hash(password, SALT_ROUNDS);
 };
 
-export const compare = async (password: string, storedPassword: string) => {
+export const compare = async (password: string, storedPassword: string): Promise<boolean> => {
   return await bcrypt.compare(password, storedPassword);
 };
 
-export const generateToken = async ({ id, username, active }: TokenData): Promise<string> => {
+export const generateToken = async ({ id, username, active, role }: TokenData): Promise<string> => {
   return new Promise((resolve, reject) => {
     jwt.sign(
-      { id, username, active },
+      { id, username, active, role },
       PRIVATE_KEY,
       {
         expiresIn: '6h',

@@ -14,13 +14,14 @@ export const findOne = async (userQuery: Partial<UserFindQuery>, withCredential:
       password: withCredential,
       activationToken: true,
       active: true,
+      role: true,
     },
   });
 
   return user;
 };
 
-export const create = async (user: Omit<User, 'id' | 'createdAt' | 'active'>) => {
+export const create = async (user: Omit<User, 'id' | 'createdAt' | 'active' | 'role'>) => {
   const newUser = await prisma.user.create({
     data: {
       username: user.username,
@@ -93,7 +94,7 @@ export const remove = async (userId: number) => {
 };
 
 
-export const update = async (userId: number, user: Omit<User, 'id' | 'createdAt' | 'password'>) => {
+export const update = async (userId: number, user: Omit<User, 'id' | 'createdAt' | 'password' | 'role'>) => {
   const updatedUser = await prisma.user.update({
     where: {
       id: userId
@@ -103,6 +104,19 @@ export const update = async (userId: number, user: Omit<User, 'id' | 'createdAt'
       email: user.email,
       activationToken: user.activationToken,
       active: user.active
+    },
+  });
+
+  return updatedUser;
+};
+
+export const updatePassword = async (userId: number, password: string) => {
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId
+    },
+    data: {
+      password,
     },
   });
 
