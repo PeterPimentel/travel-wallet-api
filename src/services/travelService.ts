@@ -1,12 +1,18 @@
 import { Travel } from '@prisma/client';
 
-import prisma from '../config/db';
 import { AuthError } from '../util/Error';
-import { ERROR_MESSAGES } from '../util/errorUtil';
-import { sanitizeTravel } from '../util/sanitizeUtil';
+import { ERROR_CODES, ERROR_MESSAGES } from '../util/errorUtil';
 import { isValidTravel } from '../util/validator/travelValidator';
+
 import { bulkRemove as locationBulkRemove } from './locationService';
-import { bulkRemove as expenseBulkRemove } from './expenseService';
+
+import * as expenseModel from '../model/expenseModel';
+import * as travelModel from '../model/travelModel';
+import * as sharedTravelModel from '../model/sharedTravelModel';
+
+type TravelListResponse = Travel & {
+  shared?: boolean;
+}
 
 export const create = async (ownerId: number, travel: Omit<Travel, 'id'>) => {
   const validator = isValidTravel(travel)
@@ -14,75 +20,38 @@ export const create = async (ownerId: number, travel: Omit<Travel, 'id'>) => {
     throw new AuthError(ERROR_MESSAGES.MISSING_FIELDS(validator.fields), 400);
   }
 
-  const newTravel = await prisma.travel.create({
-    data: {
-      name: travel.name,
-      cover: travel.cover,
-      ownerId,
-      budget: travel.budget ? travel.budget : null,
-    },
-  });
+  const newTravel = await travelModel.create(ownerId, travel)
 
   return newTravel;
 };
 
-export const find = async (ownerId: number) => {
-  const travels = await prisma.travel.findMany({
-    where: {
-      ownerId,
-    },
-    include: {
-      expenses: {
-        orderBy: {
-          date: 'desc',
-        },
-        include: {
-          location: true
-        }
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+export const find = async (userId: number) => {
+  const travelsPromise = travelModel.find(userId) as Promise<TravelListResponse[]>
+  const sharedTravelsPromise = sharedTravelModel.findMany({ userId }) as Promise<TravelListResponse[]>
 
-  return travels;
-};
+  const [travels, sharedTravels] = await Promise.all([travelsPromise, sharedTravelsPromise])
 
-export const findOne = async (ownerId: number, travelId: number) => {
-  const travels = await prisma.travel.findFirst({
-    where: {
-      id: travelId,
-      ownerId,
-    },
-    include: {
-      expenses: {
-        orderBy: {
-          date: 'desc',
-        },
-        include: {
-          location: true
-        }
-      },
-    },
-  });
+  const userTravels = travels.map<TravelListResponse>(travel => {
+    travel.shared = false;
+    return travel;
+  })
+  const shared = sharedTravels.map<TravelListResponse>(travel => {
+    travel.shared = true;
+    return travel;
+  })
 
-  return travels;
+  return userTravels.concat(shared);
 };
 
 export const update = async (ownerId: number, travelId: number, data: Travel) => {
-  const storedTravel = await prisma.travel.findUnique({
-    where: {
-      id: travelId,
-    },
-  });
+  const storedTravel = await travelModel.findByIdLean(travelId)
 
   if (!storedTravel) {
     throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND('travel'), 404);
   }
 
   if (storedTravel?.ownerId !== ownerId) {
-    throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403);
+    throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403, ERROR_CODES.forbidden);
   }
 
   const validator = isValidTravel(data)
@@ -90,22 +59,13 @@ export const update = async (ownerId: number, travelId: number, data: Travel) =>
     throw new AuthError(ERROR_MESSAGES.MISSING_FIELDS(validator.fields), 400);
   }
 
-  const travel = await prisma.travel.update({
-    where: {
-      id: travelId,
-    },
-    data: sanitizeTravel('UPDATE', data),
-  });
+  const travel = await travelModel.update(travelId, data);
 
   return travel;
 };
 
 export const remove = async (ownerId: number, travelId: number) => {
-  const storedTravel = await prisma.travel.findUnique({
-    where: {
-      id: travelId,
-    },
-  });
+  const storedTravel = await travelModel.findByIdLean(travelId);
 
   if (!storedTravel) {
     throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND('travel'), 404);
@@ -115,14 +75,11 @@ export const remove = async (ownerId: number, travelId: number) => {
     throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403);
   }
 
-  await expenseBulkRemove(travelId)
+  await sharedTravelModel.bulkRemove(travelId)
+  await expenseModel.bulkRemove(travelId)
   await locationBulkRemove(travelId)
 
-  const removedItem = await prisma.travel.delete({
-    where: {
-      id: travelId,
-    },
-  });
+  const removedItem = await travelModel.remove(travelId)
 
   return removedItem;
 };

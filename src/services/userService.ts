@@ -68,6 +68,20 @@ export const remove = async (userId: number) => {
     });
   }
 
+  if (travelIds.length) {
+    await prisma.sharedTravel.deleteMany({
+      where: {
+        travelOwnerId: userId
+      },
+    });
+  }
+
+  await prisma.sharedTravel.deleteMany({
+    where: {
+      userId: userId
+    },
+  });
+
   await prisma.location.deleteMany({
     where: {
       ownerId: userId

@@ -8,6 +8,7 @@ import * as monitoringController from '../controllers/monitoringController';
 import * as cmsController from '../controllers/cmsController';
 import * as userController from '../controllers/userController';
 import * as locationController from '../controllers/locationController';
+import * as sharedTravelsController from '../controllers/sharedTravelsController';
 
 import * as guardMiddleware from '../middlewares/guardMiddleware';
 
@@ -32,9 +33,14 @@ router.delete('/api/user', guardMiddleware.authGuard(ROLE.user), userController.
 // TRAVEL PATH
 router.post('/api/travel', guardMiddleware.authGuard(ROLE.user), guardMiddleware.activationGuard, travelController.create);
 router.get('/api/travel', guardMiddleware.authGuard(ROLE.user), travelController.find);
-router.get('/api/travel/:id', guardMiddleware.authGuard(ROLE.user), travelController.findOne);
 router.put('/api/travel/:id', guardMiddleware.authGuard(ROLE.user), guardMiddleware.activationGuard, travelController.update);
 router.delete('/api/travel/:id', guardMiddleware.authGuard(ROLE.user), travelController.remove);
+
+// TRAVEL SHARE PATH
+router.post('/api/share', guardMiddleware.authGuard(ROLE.user), sharedTravelsController.create);
+router.get('/api/share', guardMiddleware.authGuard(ROLE.user), sharedTravelsController.find);
+router.get('/api/share/:travelId/user', guardMiddleware.authGuard(ROLE.user), sharedTravelsController.findUsers);
+router.delete('/api/share/:id', guardMiddleware.authGuard(ROLE.user), sharedTravelsController.remove);
 
 // EXPENSE PATH
 router.post('/api/expense', guardMiddleware.authGuard(ROLE.user), guardMiddleware.activationGuard, expenseController.create);

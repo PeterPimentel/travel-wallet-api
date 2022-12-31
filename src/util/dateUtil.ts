@@ -9,11 +9,12 @@ export const formatDate = (date: Date, pattern: string = DATE_FORMAT): string =>
 };
 
 export const parseDate = (value: string, pattern: string = DATE_FORMAT): Date => {
-  try {
-    return parse(value, pattern, new Date());
-  } catch (error) {
+  const date = parse(value, pattern, new Date());
+  if (!isValidDate(date)) {
     throw new ApiError(ERROR_MESSAGES.INVALID_DATE, 400);
   }
+
+  return date;
 };
 
 export const isValidDate = (date: any): boolean => {
