@@ -2,7 +2,7 @@ import { Location } from "@prisma/client"
 import { Place, PlaceApiResponse } from "../../types/LocationType";
 import { checkProperties, ValidatorResponse } from "./common"
 
-type ReducedLocation = Omit<Location, "id" | "createdAt" | "ownerId" | "travelId">
+type ReducedLocation = Omit<Location, "id" | "createdAt" | "ownerId" | "travelId" | "sharedTravelId">
 
 export const isValidLocation = (operation: 'CREATE' | 'UPDATE', data: Partial<Location>): ValidatorResponse => {
   const PROPS = ['countryCode', 'countryName', 'cityName', 'label', 'cityLat', 'region', 'cityLong']

@@ -1,12 +1,11 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["referentialIntegrity"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider             = "mysql"
-  url                  = env("DATABASE_URL")
-  referentialIntegrity = "prisma"
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model ResetToken {
@@ -19,65 +18,99 @@ model ResetToken {
 }
 
 model User {
-  id              Int        @id @default(autoincrement())
-  createdAt       DateTime   @default(now())
-  email           String     @unique
-  username        String     @unique
-  password        String
-  active          Boolean    @default(false)
-  activationToken String     @default("")
-  travels         Travel[]
-  expenses        Expense[]
-  Location        Location[]
-  role            String     @default("USER")
+  id                  Int            @id @default(autoincrement())
+  createdAt           DateTime       @default(now())
+  email               String         @unique
+  username            String         @unique
+  password            String
+  active              Boolean        @default(false)
+  activationToken     String         @default("")
+  travels             Travel[]
+  expenses            Expense[]
+  Location            Location[]
+  role                String         @default("USER")
+  sharedTravels       SharedTravel[] @relation("SharedTravels")
+  sharedTravelsWithMe SharedTravel[] @relation("SharedTravelsWithMe")
 }
 
 model Location {
-  id          Int       @id @default(autoincrement())
-  createdAt   DateTime  @default(now())
-  countryCode String
-  countryName String
-  cityName    String
-  label       String
-  cityLat     Float
-  cityLong    Float
-  region      String
-  owner       User      @relation(fields: [ownerId], references: [id])
-  ownerId     Int
-  travel      Travel    @relation(fields: [travelId], references: [id])
-  travelId    Int
-  Expense     Expense[]
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  countryCode    String
+  countryName    String
+  cityName       String
+  label          String
+  cityLat        Float
+  cityLong       Float
+  region         String
+  owner          User          @relation(fields: [ownerId], references: [id])
+  ownerId        Int
+  travel         Travel        @relation(fields: [travelId], references: [id])
+  travelId       Int
+  Expense        Expense[]
+  SharedTravel   SharedTravel? @relation(fields: [sharedTravelId], references: [id])
+  sharedTravelId Int?
+
+  @@index([sharedTravelId])
+  @@index([travelId])
+  @@index([ownerId])
 }
 
 model Travel {
-  id        Int        @id @default(autoincrement())
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  name      String
-  cover     String
-  owner     User       @relation(fields: [ownerId], references: [id])
-  ownerId   Int
-  budget    Float?
-  expenses  Expense[]
-  Location  Location[]
+  id           Int            @id @default(autoincrement())
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  name         String
+  cover        String
+  owner        User           @relation(fields: [ownerId], references: [id])
+  ownerId      Int
+  budget       Float?
+  expenses     Expense[]
+  Location     Location[]
+  SharedTravel SharedTravel[]
+
+  @@index([ownerId])
+}
+
+model SharedTravel {
+  id            Int        @id @default(autoincrement())
+  travel        Travel     @relation(fields: [travelId], references: [id])
+  travelId      Int
+  user          User       @relation(name: "SharedTravelsWithMe", fields: [userId], references: [id])
+  userId        Int
+  travelOwner   User       @relation(name: "SharedTravels", fields: [travelOwnerId], references: [id])
+  travelOwnerId Int
+  Location      Location[]
+  Expense       Expense[]
+
+  @@index([userId])
+  @@index([travelOwnerId])
+  @@index([travelId])
 }
 
 model Expense {
-  id          Int       @id @default(autoincrement())
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  date        DateTime
-  description String?
-  title       String
-  type        String
-  value       Float
-  payment     String
-  travel      Travel    @relation(fields: [travelId], references: [id])
-  travelId    Int
-  User        User      @relation(fields: [userId], references: [id])
-  userId      Int
-  location    Location? @relation(fields: [locationId], references: [id])
-  locationId  Int?
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  date           DateTime
+  description    String?
+  title          String
+  type           String
+  value          Float
+  payment        String
+  travel         Travel        @relation(fields: [travelId], references: [id])
+  travelId       Int
+  User           User          @relation(fields: [userId], references: [id])
+  userId         Int
+  location       Location?     @relation(fields: [locationId], references: [id])
+  locationId     Int?
+  SharedTravel   SharedTravel? @relation(fields: [sharedTravelId], references: [id])
+  sharedTravelId Int?
+
+  @@index([sharedTravelId])
+  @@index([locationId])
+  @@index([userId])
+  @@index([travelId])
 }
 
 model Cover {

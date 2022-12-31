@@ -3,7 +3,12 @@ import { parseDate } from './dateUtil';
 
 export const sanitizeTravel = (operation: 'CREATE' | 'UPDATE', data: Travel): Partial<Travel> => {
   if (operation === 'CREATE') {
-    return data;
+    return {
+      name: data.name,
+      cover: data.cover,
+      ownerId: data.ownerId,
+      budget: data.budget ? data.budget : null,
+    };
   } else {
     return {
       name: data.name,
@@ -19,11 +24,11 @@ export const sanitizeUpdateExpense = (data: Expense, locationId: number | null):
   return {
     date: expenseDate,
     description: data.description,
+    locationId,
     payment: data.payment,
     title: data.title,
     type: data.type,
     value: data.value,
-    locationId,
   };
 };
 

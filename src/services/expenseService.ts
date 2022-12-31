@@ -1,13 +1,16 @@
 import { Expense, Location } from '@prisma/client';
 
-import prisma from '../config/db';
-import { parseDate } from '../util/dateUtil';
 import ApiError, { AuthError } from '../util/Error';
-import { ERROR_MESSAGES } from '../util/errorUtil';
+import { ERROR_CODES, ERROR_MESSAGES } from '../util/errorUtil';
 import logger from '../util/logUtil';
-import { sanitizeUpdateExpense } from '../util/sanitizeUtil';
+
 import { isValidExpense } from '../util/validator/expenseValidator';
 import { isSameLocation } from '../util/validator/locationValidator';
+
+import * as expenseModel from "../model/expenseModel"
+import * as sharedTravelModel from "../model/sharedTravelModel"
+import * as travelModel from '../model/travelModel';
+
 import * as locationService from './locationService';
 
 const NAME_SPACE = 'expense-service';
@@ -54,23 +57,21 @@ const updateExpenseLocation = async (data: Location | undefined, storedLocation:
   return null
 }
 
-const findOne = async (expenseId: number) => {
-  const storedExpense = await prisma.expense.findUnique({
-    where: {
-      id: expenseId,
-    },
-    include: {
-      location: true,
-    }
-  });
-
-  return storedExpense
-}
-
 export const create = async (userId: number, expense: Omit<ExpenseRequest, 'id'>) => {
   const validator = isValidExpense('CREATE', expense)
   if (!validator.valid) {
     throw new ApiError(ERROR_MESSAGES.MISSING_FIELDS(validator.fields), 400);
+  }
+
+  const travel = await travelModel.findByIdLean(expense.travelId);
+  if (!travel) {
+    throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND('travel'), 404);
+  }
+
+  const sharedTravel = await sharedTravelModel.findFirstLean({ travelId: travel.id, userId })
+
+  if (!sharedTravel && travel?.ownerId !== userId) {
+    throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403, ERROR_CODES.forbidden);
   }
 
   let expenseLocation = null;
@@ -79,72 +80,51 @@ export const create = async (userId: number, expense: Omit<ExpenseRequest, 'id'>
     expenseLocation = await locationService.create(userId, expense.travelId, expense.location);
   }
 
-  const expenseDate = parseDate(expense.date as unknown as string);
-
-  const newExpense = await prisma.expense.create({
-    data: {
-      title: expense.title,
-      date: expenseDate,
-      payment: expense.payment,
-      type: expense.type,
-      travelId: expense.travelId,
-      value: expense.value,
-      description: expense.description,
-      userId,
-      locationId: expenseLocation ? expenseLocation.id : null
-    },
-    include: {
-      location: true
-    }
-  });
+  const locationId = expenseLocation ? expenseLocation.id : null
+  const newExpense = await expenseModel.create(userId, expense, locationId)
 
   return newExpense;
 };
 
 export const update = async (userId: number, expenseId: number, data: ExpenseRequest) => {
-  const storedExpense = await findOne(expenseId);
+  const storedExpense = await expenseModel.findOne(expenseId);
 
   if (!storedExpense) {
     throw new AuthError(ERROR_MESSAGES.ENTITY_NOT_FOUND('expense'), 404);
   }
-  if (storedExpense?.userId !== userId) {
-    throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403);
+
+  const sharedTravel = await sharedTravelModel.findFirstLean({ travelId: storedExpense.travelId, userId })
+
+  if (!sharedTravel && storedExpense?.userId !== userId) {
+    throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403, ERROR_CODES.forbidden);
   }
+
   const validator = isValidExpense('UPDATE', data)
+
   if (!validator.valid) {
     throw new ApiError(ERROR_MESSAGES.MISSING_FIELDS(validator.fields), 400);
   }
 
   const locationId = await updateExpenseLocation(data.location, storedExpense.location, userId, storedExpense.travelId)
 
-  const expense = await prisma.expense.update({
-    where: {
-      id: expenseId,
-    },
-    data: sanitizeUpdateExpense(data, locationId),
-    include: {
-      location: true,
-    }
-  });
+  const expense = await expenseModel.update(expenseId, data, locationId)
 
   return expense;
 };
 
 export const remove = async (userId: number, expenseId: number) => {
-  const storedExpense = await findOne(expenseId);
+  const storedExpense = await expenseModel.findOne(expenseId);
 
   if (!storedExpense) {
     throw new ApiError(ERROR_MESSAGES.ENTITY_NOT_FOUND('expense'), 404);
   }
-  if (storedExpense.userId !== userId) {
-    throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403);
+  const sharedTravel = await sharedTravelModel.findFirstLean({ travelId: storedExpense.travelId, userId })
+
+  if (!sharedTravel && storedExpense?.userId !== userId) {
+    throw new AuthError(ERROR_MESSAGES.FORBIDDEN, 403, ERROR_CODES.forbidden);
   }
 
-  const removedItem = await prisma.expense.delete({
-    where: {
-      id: expenseId,
-    },
-  });
+  const removedItem = await expenseModel.remove(expenseId)
 
   if (storedExpense.locationId) {
     await locationService.remove(userId, storedExpense.locationId)
@@ -154,9 +134,5 @@ export const remove = async (userId: number, expenseId: number) => {
 };
 
 export const bulkRemove = async (travelId: number) => {
-  return prisma.expense.deleteMany({
-    where: {
-      travelId,
-    },
-  });
+  return await expenseModel.bulkRemove(travelId)
 };

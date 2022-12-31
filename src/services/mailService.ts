@@ -43,3 +43,21 @@ export const sendPasswordResetCodeEmail = async (userEmail: string, code: string
 
     await sgMail.send(email)
 }
+
+export const sendSharedTravelNotificationEmail = async (friendEmail: string, travelOwnerEmail: string, travelName: string, travelId: number) => {
+    logger.info(NAME_SPACE, 'sendSharedTravelNotificationEmail');
+
+    const email = {
+        to: friendEmail,
+        from: VERIFIED_SENDER as string,
+        html: `<div>The ${travelName} travel was shared with you by ${travelOwnerEmail}<div/>`,
+        dynamic_template_data: {
+            travel: travelName,
+            by: travelOwnerEmail,
+            id: travelId,
+        },
+        template_id: EMAIL_TEMPLATE.travel_shared
+    }
+
+    await sgMail.send(email)
+}
